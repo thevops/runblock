@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"os/exec"
 
 	pkg "runblock/pkg"
 	logger "runblock/pkg/logger"
@@ -41,27 +39,8 @@ func ExecCmd() *cobra.Command {
 				logger.Log.Fatalf("Code block for '%s' is empty", name)
 			}
 
-			// Save the code block content to a temporary file
-			fileNamePattern := fmt.Sprintf("runblock-*.%s", blockLanguage)
-			tmpFile, err := os.CreateTemp("", fileNamePattern)
-			if err != nil {
-				logger.Log.Fatalf("Failed to create temporary file: %v", err)
-			}
-			logger.Log.Debug("Created temporary file: ", tmpFile.Name())
-			defer os.Remove(tmpFile.Name())
-
-			if _, err := tmpFile.WriteString(blockContent); err != nil {
-				logger.Log.Fatalf("Failed to write to temporary file: %v", err)
-			}
-
-			// Execute the code block content in the current shell
-			cmdExec := exec.Command(blockLanguage, tmpFile.Name())
-			cmdExec.Stdout = os.Stdout
-			cmdExec.Stderr = os.Stderr
-			cmdExec.Stdin = os.Stdin
-			if err := cmdExec.Run(); err != nil {
-				logger.Log.Fatalf("Failed to execute code block: %v", err)
-			}
+			// Execute the code block
+			pkg.Exec(blockLanguage, blockContent)
 		},
 	}
 

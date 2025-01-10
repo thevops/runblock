@@ -24,6 +24,7 @@ func main() {
 	rootCmd.AddCommand(cmd.ListCmd())
 	rootCmd.AddCommand(cmd.PrintCmd())
 	rootCmd.AddCommand(cmd.ExecCmd())
+	rootCmd.AddCommand(cmd.RunCmd())
 
 	if err := rootCmd.Execute(); err != nil {
 		logger.Log.Fatalf("Error executing command: %v", err)

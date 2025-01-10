@@ -2,13 +2,13 @@
 
 This is test 1
 
-```bash {"name": "test1"}
+```bash {"name": "test1", "description": "This is test 1"}
 echo "Hello test1"
 ```
 
 This is test 2
 
-```bash {"name": "test2", "description": "This is a test 2"}
+```bash {"name": "test2", "description": "This is test 2"}
 echo "Hello from test2"
 read -p "Enter your name: " name
 echo "Hello $name"

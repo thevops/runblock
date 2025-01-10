@@ -15,6 +15,17 @@ Run code blocks from Markdown files
 
 ## Installation
 
+### From release
+
+Download the latest release:
+
+```sh
+wget -O runblock "https://github.com/thevops/runblock/releases/latest/download/runblock_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m)"
+chmod +x runblock
+```
+
+### From source
+
 To install `runblock`, you need to have Go installed on your machine. Then, you can clone the repository and build the project:
 
 ```sh

@@ -31,11 +31,11 @@ func ListCmd() *cobra.Command {
 				logger.Log.Fatalf("Failed to extract code blocks: %v", err)
 			}
 
-			for blockName, blockContent := range codeBlocks {
-				if len(blockContent.Attributes.Description) == 0 {
-					fmt.Printf("%s\n", blockName)
+			for _, block := range codeBlocks {
+				if len(block.Attributes.Description) == 0 {
+					fmt.Printf("%s\n", block.Attributes.Name)
 				} else {
-					fmt.Printf("%s - %s\n", blockName, blockContent.Attributes.Description)
+					fmt.Printf("%s - %s\n", block.Attributes.Name, block.Attributes.Description)
 				}
 			}
 		},

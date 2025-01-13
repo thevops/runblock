@@ -37,9 +37,9 @@ func RunCmd() *cobra.Command {
 			var codeBlockOptions []huh.Option[string]
 			// Create a list of options for the select form
 			// fullDesc will be displayed, but name will be used as the value
-			for name, content := range codeBlocks {
-				fullDesc := fmt.Sprintf("%s - %s", name, content.Attributes.Description)
-				codeBlockOptions = append(codeBlockOptions, huh.NewOption(fullDesc, name))
+			for _, block := range codeBlocks {
+				fullDesc := fmt.Sprintf("%s - %s", block.Attributes.Name, block.Attributes.Description)
+				codeBlockOptions = append(codeBlockOptions, huh.NewOption(fullDesc, block.Attributes.Name))
 			}
 
 			// Handle Ctrl+C to gracefully exit the loop
@@ -67,15 +67,15 @@ func RunCmd() *cobra.Command {
 					logger.Log.Fatalf("Failed to run form: %v", err)
 				}
 
-				blockContent := codeBlocks[selectedName].Content
-				blockLanguage := codeBlocks[selectedName].Language
-
-				if blockContent == "" {
-					logger.Log.Fatalf("Code block for '%s' is empty", selectedName)
+				// Get block by name
+				namedCodeBlockMap := pkg.CreateNamedCodeBlockMap(codeBlocks)
+				namedCodeBlock, err := pkg.GetNamedCodeBlock(namedCodeBlockMap, selectedName)
+				if err != nil {
+					logger.Log.Fatalf("Failed to get named code block: %v", err)
 				}
 
 				// Execute the code block
-				pkg.Exec(blockLanguage, blockContent)
+				pkg.Exec(namedCodeBlock.Language, namedCodeBlock.Content)
 
 				fmt.Printf("--- Code block finished ---\n")
 				fmt.Printf("Press Ctrl+C to exit or any key to run another code block\n")

@@ -32,15 +32,13 @@ func ExecCmd() *cobra.Command {
 				logger.Log.Fatalf("Failed to extract code blocks: %v", err)
 			}
 
-			blockContent := codeBlocks[name].Content
-			blockLanguage := codeBlocks[name].Language
-
-			if blockContent == "" {
-				logger.Log.Fatalf("Code block for '%s' is empty", name)
+			// Get block by name
+			namedCodeBlock, err := pkg.GetNamedCodeBlock(codeBlocks, name)
+			if err != nil {
+				logger.Log.Fatalf("Failed to get named code block: %v", err)
 			}
 
-			// Execute the code block
-			pkg.Exec(blockLanguage, blockContent)
+			pkg.Exec(namedCodeBlock.Language, namedCodeBlock.Content)
 		},
 	}
 

@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/yuin/goldmark"
@@ -10,18 +11,18 @@ import (
 	"github.com/yuin/goldmark/text"
 )
 
-type NamedCodeBlockAttributes struct {
+type NamedCodeBlockAttribute struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
 type NamedCodeBlock struct {
-	Attributes NamedCodeBlockAttributes `json:"attributes"`
-	Content    string                   `json:"content"`
-	Language   string                   `json:"language"`
+	Attributes NamedCodeBlockAttribute `json:"attributes"`
+	Content    string                  `json:"content"`
+	Language   string                  `json:"language"`
 }
 
-func LoadNamedCodeBlocks(markdownContent []byte) (map[string]NamedCodeBlock, error) {
+func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 	// Create a Goldmark Markdown parser
 	md := goldmark.New()
 
@@ -53,16 +54,16 @@ func LoadNamedCodeBlocks(markdownContent []byte) (map[string]NamedCodeBlock, err
 			firstLine := strings.Fields(string(fencedCodeBlock.Info.Value(markdownContent)))
 			attributes := strings.Join(firstLine[1:], " ")
 
-			var namedCodeBlockAttributes NamedCodeBlockAttributes
-			err := json.Unmarshal([]byte(attributes), &namedCodeBlockAttributes)
+			var namedCodeBlockAttribute NamedCodeBlockAttribute
+			err := json.Unmarshal([]byte(attributes), &namedCodeBlockAttribute)
 			if err != nil {
 				fmt.Println("Error parsing JSON:", err)
-				return 0, nil
+				return ast.WalkContinue, nil
 			}
 
-			// Append the NamedCodeBlock to the list
-			namedCodeBlocks[namedCodeBlockAttributes.Name] = NamedCodeBlock{
-				Attributes: namedCodeBlockAttributes,
+			// Append the NamedCodeBlock to the map
+			namedCodeBlocks[namedCodeBlockAttribute.Name] = NamedCodeBlock{
+				Attributes: namedCodeBlockAttribute,
 				Content:    literal,
 				Language:   string(fencedCodeBlock.Language(markdownContent)),
 			}
@@ -74,5 +75,26 @@ func LoadNamedCodeBlocks(markdownContent []byte) (map[string]NamedCodeBlock, err
 		return nil, fmt.Errorf("failed to walk AST: %w", err)
 	}
 
-	return namedCodeBlocks, nil
+	// Convert the map to a slice of NamedCodeBlock
+	var sortedCodeBlocks []NamedCodeBlock
+	for _, v := range namedCodeBlocks {
+		sortedCodeBlocks = append(sortedCodeBlocks, v)
+	}
+
+	// Sort the slice based on the Name attribute
+	sort.Slice(sortedCodeBlocks, func(i, j int) bool {
+		return sortedCodeBlocks[i].Attributes.Name < sortedCodeBlocks[j].Attributes.Name
+	})
+
+	return sortedCodeBlocks, nil
+}
+
+func GetNamedCodeBlock(namedCodeBlocks []NamedCodeBlock, name string) (NamedCodeBlock, error) {
+	for _, block := range namedCodeBlocks {
+		if block.Attributes.Name == name && block.Content != "" {
+			return block, nil
+		}
+	}
+
+	return NamedCodeBlock{}, fmt.Errorf("code block '%s' not found", name)
 }

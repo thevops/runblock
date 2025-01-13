@@ -36,21 +36,23 @@ func PrintCmd() *cobra.Command {
 				logger.Log.Fatalf("Failed to extract code blocks: %v", err)
 			}
 
-			for blockName, blockContent := range codeBlocks {
-				if name != "" && blockName == name {
-					if details {
-						fmt.Printf("Name: %s\n", blockName)
-						fmt.Printf("Language: %s\n", blockContent.Language)
-						if len(blockContent.Attributes.Description) == 0 {
-							fmt.Printf("Description: none\n")
-						} else {
-							fmt.Printf("Description: %s\n", blockContent.Attributes.Description)
-						}
-						fmt.Printf("---\n")
-					}
-					fmt.Printf("%s", blockContent.Content)
-				}
+			// Get block by name
+			namedCodeBlock, err := pkg.GetNamedCodeBlock(codeBlocks, name)
+			if err != nil {
+				logger.Log.Fatalf("Failed to get named code block: %v", err)
 			}
+
+			if details {
+				fmt.Printf("Name: %s\n", namedCodeBlock.Attributes.Name)
+				fmt.Printf("Language: %s\n", namedCodeBlock.Language)
+				if len(namedCodeBlock.Attributes.Description) == 0 {
+					fmt.Printf("Description: none\n")
+				} else {
+					fmt.Printf("Description: %s\n", namedCodeBlock.Attributes.Description)
+				}
+				fmt.Printf("---\n")
+			}
+			fmt.Printf("%s", namedCodeBlock.Content)
 		},
 	}
 

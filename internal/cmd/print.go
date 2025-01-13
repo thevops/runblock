@@ -37,7 +37,8 @@ func PrintCmd() *cobra.Command {
 			}
 
 			// Get block by name
-			namedCodeBlock, err := pkg.GetNamedCodeBlock(codeBlocks, name)
+			namedCodeBlockMap := pkg.CreateNamedCodeBlockMap(codeBlocks)
+			namedCodeBlock, err := pkg.GetNamedCodeBlock(namedCodeBlockMap, name)
 			if err != nil {
 				logger.Log.Fatalf("Failed to get named code block: %v", err)
 			}

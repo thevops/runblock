@@ -3,8 +3,11 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"runblock/pkg/logger"
 	"sort"
 	"strings"
+
+	"regexp"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -22,6 +25,15 @@ type NamedCodeBlock struct {
 	Language   string                  `json:"language"`
 }
 
+// LoadNamedCodeBlocks parses the provided Markdown content to extract named code blocks.
+// It returns a slice of NamedCodeBlock structs and an error if any occurred during parsing.
+//
+// Parameters:
+// - markdownContent: A byte slice containing the Markdown content to be parsed.
+//
+// Returns:
+// - A slice of NamedCodeBlock structs containing the extracted code blocks.
+// - An error if any occurred during parsing.
 func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 	// Create a Goldmark Markdown parser
 	md := goldmark.New()
@@ -52,12 +64,14 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 
 			// Extract the attributes
 			firstLine := strings.Fields(string(fencedCodeBlock.Info.Value(markdownContent)))
-			attributes := strings.Join(firstLine[1:], " ")
+			// Use a regular expression to extract the JSON part of the attributes
+			re := regexp.MustCompile(`\{.*\}`)
+			attributes := re.FindString(strings.Join(firstLine[1:], " "))
 
 			var namedCodeBlockAttribute NamedCodeBlockAttribute
 			err := json.Unmarshal([]byte(attributes), &namedCodeBlockAttribute)
 			if err != nil {
-				fmt.Println("Error parsing JSON:", err)
+				logger.Log.Fatalf("Error parsing JSON for attributes '%s': %v\n", attributes, err)
 				return 0, nil
 			}
 
@@ -83,12 +97,26 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 	return namedCodeBlocks, nil
 }
 
-func GetNamedCodeBlock(namedCodeBlocks []NamedCodeBlock, name string) (NamedCodeBlock, error) {
+func CreateNamedCodeBlockMap(namedCodeBlocks []NamedCodeBlock) map[string]NamedCodeBlock {
+	namedCodeBlockMap := make(map[string]NamedCodeBlock, len(namedCodeBlocks))
 	for _, block := range namedCodeBlocks {
-		if block.Attributes.Name == name && block.Content != "" {
-			return block, nil
+		if block.Content != "" {
+			namedCodeBlockMap[block.Attributes.Name] = block
 		}
 	}
+	return namedCodeBlockMap
+}
 
+// GetNamedCodeBlock retrieves a NamedCodeBlock from the map by its name.
+// Parameters:
+// - namedCodeBlockMap: a map where the key is the name of the code block and the value is the NamedCodeBlock.
+// - name: the name of the code block to retrieve.
+// Returns:
+// - NamedCodeBlock: the code block with the specified name.
+// - error: an error if the code block is not found.
+func GetNamedCodeBlock(namedCodeBlockMap map[string]NamedCodeBlock, name string) (NamedCodeBlock, error) {
+	if block, exists := namedCodeBlockMap[name]; exists {
+		return block, nil
+	}
 	return NamedCodeBlock{}, fmt.Errorf("code block '%s' not found", name)
 }

@@ -30,7 +30,7 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 	reader := text.NewReader(markdownContent)
 	doc := md.Parser().Parse(reader)
 
-	namedCodeBlocks := make(map[string]NamedCodeBlock)
+	var namedCodeBlocks []NamedCodeBlock
 
 	// Walk through the AST to find FencedCodeBlock nodes
 	walker := func(node ast.Node, entering bool) (ast.WalkStatus, error) {
@@ -58,15 +58,15 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 			err := json.Unmarshal([]byte(attributes), &namedCodeBlockAttribute)
 			if err != nil {
 				fmt.Println("Error parsing JSON:", err)
-				return ast.WalkContinue, nil
+				return 0, nil
 			}
 
-			// Append the NamedCodeBlock to the map
-			namedCodeBlocks[namedCodeBlockAttribute.Name] = NamedCodeBlock{
+			// Append the NamedCodeBlock to the list
+			namedCodeBlocks = append(namedCodeBlocks, NamedCodeBlock{
 				Attributes: namedCodeBlockAttribute,
 				Content:    literal,
 				Language:   string(fencedCodeBlock.Language(markdownContent)),
-			}
+			})
 		}
 		return ast.WalkContinue, nil
 	}
@@ -75,18 +75,12 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 		return nil, fmt.Errorf("failed to walk AST: %w", err)
 	}
 
-	// Convert the map to a slice of NamedCodeBlock
-	var sortedCodeBlocks []NamedCodeBlock
-	for _, v := range namedCodeBlocks {
-		sortedCodeBlocks = append(sortedCodeBlocks, v)
-	}
-
-	// Sort the slice based on the Name attribute
-	sort.Slice(sortedCodeBlocks, func(i, j int) bool {
-		return sortedCodeBlocks[i].Attributes.Name < sortedCodeBlocks[j].Attributes.Name
+	// Sort the list based on the Name attribute
+	sort.Slice(namedCodeBlocks, func(i, j int) bool {
+		return namedCodeBlocks[i].Attributes.Name < namedCodeBlocks[j].Attributes.Name
 	})
 
-	return sortedCodeBlocks, nil
+	return namedCodeBlocks, nil
 }
 
 func GetNamedCodeBlock(namedCodeBlocks []NamedCodeBlock, name string) (NamedCodeBlock, error) {

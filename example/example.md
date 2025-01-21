@@ -41,3 +41,8 @@ This is test 6
 echo "Hello from test6"
 ```
 
+This is yaml 1
+
+```yaml
+name: test1
+```

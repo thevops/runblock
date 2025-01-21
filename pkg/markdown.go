@@ -57,8 +57,8 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 				literal += string(line.Value(markdownContent))
 			}
 
-			// Skip if no language, no content, or no attributes
-			if fencedCodeBlock.Language(markdownContent) == nil || literal == "" || len(fencedCodeBlock.Info.Value(markdownContent)) < 4 {
+			// Skip if no language or no content
+			if fencedCodeBlock.Language(markdownContent) == nil || literal == "" {
 				return ast.WalkContinue, nil
 			}
 
@@ -67,6 +67,11 @@ func LoadNamedCodeBlocks(markdownContent []byte) ([]NamedCodeBlock, error) {
 			// Use a regular expression to extract the JSON part of the attributes
 			re := regexp.MustCompile(`\{.*\}`)
 			attributes := re.FindString(strings.Join(firstLine[1:], " "))
+
+			// Skip if no attributes
+			if attributes == "" {
+				return ast.WalkContinue, nil
+			}
 
 			var namedCodeBlockAttribute NamedCodeBlockAttribute
 			err := json.Unmarshal([]byte(attributes), &namedCodeBlockAttribute)

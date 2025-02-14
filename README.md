@@ -38,6 +38,10 @@ go build -o runblock
 
 Run `runblock --help` to see the available commands and options.
 
+## Examples
+
+Check out the [example](./example) directory for a sample Markdown file and code blocks.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

@@ -64,7 +64,9 @@ func RunCmd() *cobra.Command {
 				)
 
 				if err := form.Run(); err != nil {
-					logger.Log.Fatalf("Failed to run form: %v", err)
+					logger.Log.Debugf("Failed to run form: %v", err)
+					// Gracefully exit the loop
+					os.Exit(0)
 				}
 
 				// Get block by name
@@ -76,10 +78,6 @@ func RunCmd() *cobra.Command {
 
 				// Execute the code block
 				pkg.Exec(namedCodeBlock.Language, namedCodeBlock.Content)
-
-				fmt.Printf("--- Code block finished ---\n")
-				fmt.Printf("Press Ctrl+C to exit or any key to run another code block\n")
-				fmt.Scanln()
 			}
 		},
 	}

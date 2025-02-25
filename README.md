@@ -42,6 +42,10 @@ Run `runblock --help` to see the available commands and options.
 
 Check out the [example](./example) directory for a sample Markdown file and code blocks.
 
+### Demo
+
+[![asciicast](https://asciinema.org/a/6uh2Awdr5zLhJ2c5Fg5LItoVF.svg)](https://asciinema.org/a/6uh2Awdr5zLhJ2c5Fg5LItoVF)
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
